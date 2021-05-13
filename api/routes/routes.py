@@ -1,6 +1,4 @@
-import json
-from types import SimpleNamespace
-from flask import Flask, jsonify, request
+from flask import Flask, request
 from domain.ingredients.handler import HandleIngredient
 from api.utils.response_generic import ResponseGeneric
 
