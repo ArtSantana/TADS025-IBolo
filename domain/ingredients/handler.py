@@ -1,5 +1,5 @@
+from domain.ingredients.models.ingredient_db import IngredientDB
 import json
-from types import SimpleNamespace
 from domain.ingredients.service import ServiceIngredient
 from domain.ingredients.models.ingredient import Ingredient
 from api.utils.response_generic import ResponseGeneric
@@ -9,29 +9,67 @@ class HandleIngredient:
         self.request = request        
         self.service = ServiceIngredient()
 
-    def get_ingredient(self):
-        return ResponseGeneric('Still woozy ma friend', 200)
+    def get_ingredients(self):
+        items = self.service.get_all_ingredients()
+        response = ResponseGeneric()
+        response.data.items = items
+        return response
 
     def post_ingredient(self):
-        ingredient = json.loads(self.request.data, object_hook=lambda d: Ingredient(**d))
-        if type(ingredient) is not Ingredient:
-            return ResponseGeneric('Bad Request!', 400)
-            
-        self.service.create_ingredient(ingredient)
-        return ResponseGeneric('Still woozy ma friend', 200)
+        response = ResponseGeneric()
+        try:
+            ingredient = json.loads(self.request.data, object_hook=lambda d: Ingredient(**d))
+            if self.service.create_ingredient(ingredient):
+                response.status = 201
+                response.message = 'Created!'
+            else:
+                response.status = 500
+                response.message = 'Internal server error!'
+        except:
+            response.status = 400
+            response.message = 'Bad Request'
+        return response
 
-    def patch_ingredient(self):
-        return ResponseGeneric('Still woozy ma friend', 200)
+    def put_ingredient(self, id: str):
+        response = ResponseGeneric()
+        try:
+            ingredient = json.loads(self.request.data, object_hook=lambda d: Ingredient(**d))
+            if self.service.update_ingredients(ingredient, id):
+                response.message = 'Success'
+                response.status = 200
+            else:
+                response.message = 'Internal server error!'
+                response.status = 500
+        except:
+            response.status = 400
+            response.message = 'Bad Request'
+        return response
 
-    def delete_ingredient(self):
-        return ResponseGeneric('Still woozy ma friend', 200)
+    def delete_ingredient(self, id: str):
+        response = ResponseGeneric()
+        if len(id) < 1:
+            response.status = 400
+            response.data.message = 'Required id value!'
+            return response
 
-    def exec(self):
+        is_deleted = self.service.delete_ingredient(id)
+        if is_deleted:
+            response.status = 204
+            return response
+        response.status = 404
+        response.data.message = 'Ingredient not found!'
+        return response
+
+    def exec_get_post(self):
         if self.request.method == 'POST':
             return self.post_ingredient()
         elif self.request.method == 'GET':
-            return self.get_ingredient()
-        elif self.request.method == 'PATCH':
-            return self.patch_ingredient()
+            return self.get_ingredients()
+        elif self.request.method == 'PUT':
+            return self.put_ingredient()
+
+    def exec_delete_put(self, id: str):
+        if self.request.method == 'PUT':
+            return self.put_ingredient(id)
         elif self.request.method == 'DELETE':
-            return self.delete_ingredient()
+            return self.delete_ingredient(id)
