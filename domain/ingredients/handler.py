@@ -1,4 +1,3 @@
-from domain.ingredients.models.ingredient_db import IngredientDB
 import json
 from domain.ingredients.service import ServiceIngredient
 from domain.ingredients.models.ingredient import Ingredient
@@ -65,8 +64,6 @@ class HandleIngredient:
             return self.post_ingredient()
         elif self.request.method == 'GET':
             return self.get_ingredients()
-        elif self.request.method == 'PUT':
-            return self.put_ingredient()
 
     def exec_delete_put(self, id: str):
         if self.request.method == 'PUT':

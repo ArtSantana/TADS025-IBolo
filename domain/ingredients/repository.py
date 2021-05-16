@@ -1,7 +1,6 @@
 from typing import Type
 from bson.objectid import ObjectId
 from domain.ingredients.models.ingredient import Ingredient
-from domain.ingredients.models.ingredient_db import IngredientDB
 from domain.config.database import database
 
 class RepositoryIngredient:
@@ -11,7 +10,6 @@ class RepositoryIngredient:
 
     def insert(self, ingredient: Type[Ingredient]):
         result = self.collection.insert(ingredient.__dict__)
-        print(result)
         try:
             result = self.collection.insert(ingredient.__dict__)
             return True

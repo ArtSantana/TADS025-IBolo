@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from domain.ingredients.handler import HandleIngredient
 from api.utils.response_generic import ResponseGeneric
+from domain.recipes.handler import HandleRecipe
 from domain.config.database import database
 
 app = Flask(__name__)
@@ -14,7 +15,7 @@ def handler_ingredients():
                                           mimetype='application/json')
 
 @app.route('/ingredients/<ingredient_id>', methods=['DELETE', 'PUT'])
-def delete_ingredient(ingredient_id):
+def alter_ingredient(ingredient_id):
     id = ingredient_id
     h = HandleIngredient(request)
     response = h.exec_delete_put(id)
@@ -25,10 +26,20 @@ def delete_ingredient(ingredient_id):
 
 @app.route('/recipes', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def handler_recipes():
-    h = HandleIngredient(request)
-    response = h.exec()
+    h = HandleRecipe(request)
+    response = h.exec_get_post()
     return app.response_class(response=response.get_body_json(),
                                           status=response.status, 
+                                          mimetype='application/json')
+
+@app.route('/recipes/<recipe_id>', methods=['DELETE', 'PUT'])
+def alter_recipe(recipe_id):
+    id = recipe_id
+    h = HandleRecipe(request)
+    response = h.exec_delete_put(id)
+
+    return app.response_class(response=response.get_body_json(),
+                                          status=response.status,
                                           mimetype='application/json')
 
 @app.route('/cakes', methods=['GET', 'POST', 'PATCH', 'DELETE'])
