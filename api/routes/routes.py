@@ -1,4 +1,5 @@
 from flask import Flask, request
+from domain.cakes.handler import HandleCake
 from domain.ingredients.handler import HandleIngredient
 from api.utils.response_generic import ResponseGeneric
 from domain.recipes.handler import HandleRecipe
@@ -42,13 +43,24 @@ def alter_recipe(recipe_id):
                                           status=response.status,
                                           mimetype='application/json')
 
-@app.route('/cakes', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+@app.route('/cakes', methods=['GET', 'POST'])
 def handler_cakes():
-    h = HandleIngredient(request)
-    response = h.exec()
+    h = HandleCake(request)
+    response = h.exec_get_post()
     return app.response_class(response=response.get_body_json(),
                                           status=response.status, 
                                           mimetype='application/json')
+
+@app.route('/cakes/<cake_id>', methods=['DELETE', 'PUT'])
+def alter_cake(cake_id):
+    id = cake_id
+    h = HandleCake(request)
+    response = h.exec_delete_put(id)
+
+    return app.response_class(response=response.get_body_json(),
+                                          status=response.status,
+                                          mimetype='application/json')
+
 
 @app.errorhandler(405)
 def invalid_method(error):

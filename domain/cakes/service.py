@@ -1,15 +1,27 @@
 from domain.cakes.models.cake import Cake
-from typing import Type, TypeVar
+from domain.cakes.models.cake_db import CakeDB
+from domain.cakes.repository import RepositoryCake
+from typing import Type
 
-class ServiceCakes:
+class ServiceCake:
+    def __init__(self):
+        self.repository = RepositoryCake()
+
     def create_cake(self, cake: Type[Cake]):
-        print(cake.name, cake.unit, cake.price)
+        return self.repository.insert(cake)
+    
+    def get_all_cakes(self):
+        list = self.repository.get_all()
+        obj_list = []
+        for document in list:
+            parsed_cake = CakeDB()
+            parsed_cake.parseFromDict(document)
+            obj_list.append(parsed_cake.__dict__)
+        return obj_list
 
-    def get_cakes(self):
-        print('getting cakes')
     
     def delete_cake(self, id: str):
-        print(id)
+        return self.repository.delete(id)
 
-    def update_cake(self, cake: Type[Cake]):
-        print(cake)
+    def update_cakes(self, cake: Type[Cake], id: str):
+        return self.repository.update_cake(cake, id)
