@@ -9,7 +9,6 @@ class RepositoryIngredient:
         self.collection = self.database.db['ingredients']
 
     def insert(self, ingredient: Type[Ingredient]):
-        result = self.collection.insert(ingredient.__dict__)
         try:
             result = self.collection.insert(ingredient.__dict__)
             return True
