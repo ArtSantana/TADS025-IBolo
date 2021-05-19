@@ -10,8 +10,5 @@ class DatabaseControl:
     def __init__(self):
         self.client = MongoClient(CONNECTION_URI, 27017)
         self.db = self.client[DB_NAME]
-
-    def close_connection(self):
-        self.client.close()
     
 database = DatabaseControl()

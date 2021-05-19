@@ -64,18 +64,16 @@ def alter_cake(cake_id):
 
 @app.errorhandler(405)
 def invalid_method(error):
-    response_generic = ResponseGeneric()
-    response_generic.status = 405
-    response_generic.data.message = 'Method not allowed'
-    return app.response_class(response=response_generic.get_body_json(),
-                              status=response_generic.status,
+    response = ResponseGeneric()
+    response.set_message_and_status('Method not allowed', 405)
+    return app.response_class(response=response.get_body_json(),
+                              status=response.status,
                               mimetype='application/json')
 
 @app.errorhandler(404)
 def invalid_method(error):
-    response_generic = ResponseGeneric()
-    response_generic.status = 404
-    response_generic.data.message = 'Not found'
-    return app.response_class(response=response_generic.get_body_json(),
-                              status=response_generic.status,
+    response = ResponseGeneric()
+    response.set_message_and_status('Not found', 404)
+    return app.response_class(response=response.get_body_json(),
+                              status=response.status,
                               mimetype='application/json')
