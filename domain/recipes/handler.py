@@ -1,73 +1,65 @@
 import json
+from typing import Type
 from types import SimpleNamespace
+
+from werkzeug.local import LocalProxy
 from domain.recipes.service import ServiceRecipe
 from domain.recipes.models.recipe import Recipe
 from api.utils.response_generic import ResponseGeneric
 
 class HandleRecipe:
     def __init__(self, request):
-        self.request = request        
+        self.request: LocalProxy = request        
         self.service = ServiceRecipe()
+        self.response = ResponseGeneric()
 
-    def get_recipes(self):
+    def get_recipes(self) -> None:
         items = self.service.get_all_recipes()
-        response = ResponseGeneric()
-        response.data.items = items
-        return response
+        self.response.data.items = items
 
-    def post_recipe(self):
-        response = ResponseGeneric()
+    def post_recipe(self) -> None:
         recipe_request = json.loads(self.request.data, object_hook=lambda d: SimpleNamespace(**d))
         recipe = Recipe()
         try:
             recipe.parseFromRequest(recipe_request)
         except:
-            response.status = 400
-            response.message = 'Bad request!'
+            self.response.set_message_and_status('Bad request!', 400)
         if self.service.create_recipe(recipe):
-            response.status = 201
-            response.message = 'Created!'
+            self.response.set_message_and_status('Created!', 201)
         else:
-            response.status = 500
-            response.message = 'Internal server error!'
-        return response
+            self.response.set_message_and_status('Internal server error!', 500)
 
-    def put_recipe(self, id: str):
-        response = ResponseGeneric()
+    def put_recipe(self, id: str) -> None:
         recipe_request = json.loads(self.request.data, object_hook=lambda d: SimpleNamespace(**d))
         recipe = Recipe()
         recipe.parseFromRequest(recipe_request)
         if self.service.update_recipes(recipe, id):
-            response.message = 'Success'
-            response.status = 200
+            self.response.set_message_and_status('Success!', 200)
         else:
-            response.message = 'Internal server error!'
-            response.status = 500
-        return response
+            self.response.set_message_and_status('Internal server error!', 500)
 
-    def delete_recipe(self, id: str):
-        response = ResponseGeneric()
+    def delete_recipe(self, id: str) -> None:
         if len(id) < 1:
-            response.status = 400
-            response.data.message = 'Required id value!'
-            return response
+            self.response.set_message_and_status('Required id value!', 400)
+            return
 
         is_deleted = self.service.delete_recipe(id)
         if is_deleted:
-            response.status = 204
-            return response
-        response.status = 404
-        response.data.message = 'recipe not found!'
-        return response
+            self.response.status = 204
+            return
+        self.response.status = 404
+        self.response.data.message = 'recipe not found!'
 
-    def exec_get_post(self):
+    def exec_get_post(self) -> Type[ResponseGeneric]:
         if self.request.method == 'POST':
-            return self.post_recipe()
+            self.post_recipe()
         elif self.request.method == 'GET':
-            return self.get_recipes()
+            self.get_recipes()
+        return self.response
 
-    def exec_delete_put(self, id: str):
+    def exec_delete_put(self, id: str) -> Type[ResponseGeneric]:
         if self.request.method == 'PUT':
-            return self.put_recipe(id)
+            self.put_recipe(id)
         elif self.request.method == 'DELETE':
-            return self.delete_recipe(id)
+            self.delete_recipe(id)
+        return self.response

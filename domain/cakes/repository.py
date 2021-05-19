@@ -8,7 +8,7 @@ class RepositoryCake:
         self.database = database
         self.collection = self.database.db['cakes']
 
-    def insert(self, cake):
+    def insert(self, cake: Type[Cake]):
         self.collection.insert(cake.__dict__)
         return True
     

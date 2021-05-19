@@ -1,72 +1,61 @@
 import json
+
+from werkzeug.local import LocalProxy
 from domain.ingredients.service import ServiceIngredient
 from domain.ingredients.models.ingredient import Ingredient
 from api.utils.response_generic import ResponseGeneric
 
 class HandleIngredient:
     def __init__(self, request):
-        self.request = request        
+        self.request: LocalProxy = request        
         self.service = ServiceIngredient()
+        self.response = ResponseGeneric()
 
     def get_ingredients(self):
         items = self.service.get_all_ingredients()
-        response = ResponseGeneric()
-        response.data.items = items
-        return response
+        self.response.data.items = items
 
     def post_ingredient(self):
-        response = ResponseGeneric()
         try:
             ingredient = json.loads(self.request.data, object_hook=lambda d: Ingredient(**d))
             if self.service.create_ingredient(ingredient):
-                response.status = 201
-                response.message = 'Created!'
+                self.response.set_message_and_status('Created!', 201)
             else:
-                response.status = 500
-                response.message = 'Internal server error!'
+                self.response.set_message_and_status('Internal server error!', 500)
         except:
-            response.status = 400
-            response.message = 'Bad Request'
-        return response
+            self.response.set_message_and_status('Bad Request', 400)
 
     def put_ingredient(self, id: str):
-        response = ResponseGeneric()
         try:
             ingredient = json.loads(self.request.data, object_hook=lambda d: Ingredient(**d))
             if self.service.update_ingredients(ingredient, id):
-                response.message = 'Success'
-                response.status = 200
+                self.response.set_message_and_status('Success', 200)
             else:
-                response.message = 'Internal server error!'
-                response.status = 500
+                self.response.set_message_and_status('Internal server error!', 500)
         except:
-            response.status = 400
-            response.message = 'Bad Request'
-        return response
+            self.response.set_message_and_status('Bad Request!', 400)
 
     def delete_ingredient(self, id: str):
-        response = ResponseGeneric()
         if len(id) < 1:
-            response.status = 400
-            response.data.message = 'Required id value!'
-            return response
+            self.response.set_message_and_status('Required id value!', 400)
+            return
 
         is_deleted = self.service.delete_ingredient(id)
         if is_deleted:
-            response.status = 204
-            return response
-        response.status = 404
-        response.data.message = 'Ingredient not found!'
-        return response
+            self.response.status = 204
+            return
+        self.response.set_message_and_status('Ingredient not found!', 404)
 
     def exec_get_post(self):
         if self.request.method == 'POST':
-            return self.post_ingredient()
+            self.post_ingredient()
         elif self.request.method == 'GET':
-            return self.get_ingredients()
+            self.get_ingredients()
+        return self.response
 
     def exec_delete_put(self, id: str):
         if self.request.method == 'PUT':
-            return self.put_ingredient(id)
+            self.put_ingredient(id)
         elif self.request.method == 'DELETE':
-            return self.delete_ingredient(id)
+            self.delete_ingredient(id)
+        return self.response

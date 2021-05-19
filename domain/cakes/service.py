@@ -10,7 +10,7 @@ class ServiceCake:
     def create_cake(self, cake: Type[Cake]):
         return self.repository.insert(cake)
     
-    def get_all_cakes(self):
+    def get_all_cakes(self) -> list:
         list = self.repository.get_all()
         obj_list = []
         for document in list:
